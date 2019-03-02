@@ -39,7 +39,6 @@ def Dimacs2CNF(textfile):
                 lit2cls[lit].append(clause)
             cl2truth[clause] = 0  # Each clause is initially unknown (0)
 
-    # TODO add satCount, numClauses, lit2cls:
     satCount = 0
     choices = {}
     choices["begin"] = copy.deepcopy(lit2truth)
