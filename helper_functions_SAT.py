@@ -1,4 +1,5 @@
 from collections import Counter
+import copy
 
 def Dimacs2CNF(textfile):
     with open(textfile, "r") as f:
@@ -21,7 +22,7 @@ def Dimacs2CNF(textfile):
 
         for line in f:
             split = line.split()
-            del split[-1] #Remove the 0 at the end
+            del split[-1]  # Remove the 0 at the end
             clause = []
             for atom in split:
                 atom = int(atom)
@@ -70,7 +71,7 @@ def clause_is_empty(lit2truth, clause):
     return True  # If no literal is true or unknown then it is false
 
 
-def empty_clauses_naive(cl2truth, lit2truth, lit2cls, lit):
+def empty_clauses_naive(lit2truth, lit2cls, lit):
     for clause in lit2cls[lit]:
         if clause_is_empty(lit2truth, clause):
             return True
@@ -98,39 +99,72 @@ def choose_value(lit2truth):
 
 def DP_algo_naive(CNF, lit, truth):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
-    # print(lit2truth, lit, truth, choices)
+    #print(lit2truth, lit, truth, choices)
     update_naive(lit2truth, lit, truth, choices)  # Update lit2truth
+    print(lit, truth, choices)
     if satisfied_naive(cl2truth, lit2truth):
         return True
-    if empty_clauses_naive(cl2truth, lit2truth, lit2cls, lit):
+    if empty_clauses_naive(lit2truth, lit2cls, lit):
         return False
+    temp = copy.deepcopy(lit2truth)
+
+    # Comment those three lines uit if you want the version without unit clauses
+    check = unit_clause_simplification(cl2truth, lit2truth, lit2cls)  # Will return true if no conflicts and false o.w.
+    if check == False:  # Revert back to the original lit2truth values, because the unit_clause failed
+        lit2truth = copy.deepcopy(temp)
+
+
+    if satisfied_naive(cl2truth, lit2truth):
+        return True
     lit = choose_value(lit2truth)
     choices.append(lit)
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     return DP_algo_naive(CNF, lit, 1) or DP_algo_naive(CNF, lit, -1)
 
 
-"""For later use"""
+def unit_clause_simplification(cl2truth, lit2truth, lit2cls):
+    unit_list = build_unit_clause_list(cl2truth, lit2truth, lit2cls)
+    if unit_list == False:  # If unit_list is not a bool, it will resolve to True. So if unit_list is False then execute
+        return False
+    while len(unit_list) != 0:
+        unit_list = build_unit_clause_list(cl2truth, lit2truth, lit2cls)
+        if unit_list == False:
+            return False
+    return True
 
-# Given a truth assignment, see if the clause is satisfied
-# Returns the variable that needs to be changed and output 0 if no unit clause.
+
+def build_unit_clause_list(cl2truth, lit2truth, lit2cls):
+    unit_list = []
+    for clause in cl2truth:  # TODO Can optimize by checking if clause already satisfied
+        if not clause_satisfied(clause, lit2truth):
+            unit = unit_clause(lit2truth, clause)
+            if unit is not None:
+                lit = unit[0]
+                truth = unit[1]
+                lit2truth[lit] = truth
+                if empty_clauses_naive(lit2truth, lit2cls, lit):  # Check if there is a conflict
+                    return False
+                unit_list.append(unit)
+    return unit_list
+
+
 def unit_clause(lit2truth, clause):
-    unit = 0
-    counter = 1
+    unit = None
+    counter = 0
     for atom in clause:
         lit = abs(atom)
         if lit2truth[lit] == 0:
-            unit = lit
             counter = counter + 1
+            if atom < 0:
+                unit = (lit, -1)
+            else:
+                unit = (lit, 1)
     if counter == 1:
         return unit
-    return unit
+    return None
 
 
-def unit_propagation(cl2truth, lit2truth):
-    unit_clause_list = []
-    for clause in cl2truth:  # TODO Can optimize by checking if clause already satisfied
-        return
+"""For later use"""
 
 
 def check_pure_literal(atomCount, litlist):
