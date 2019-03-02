@@ -7,7 +7,7 @@ import pandas as pd
 
 filepath="text-files/1000 sudokus.txt"
 
-sudokus=txt2strings(filepath)[:5]
+sudokus=txt2strings(filepath)[:]
 
 node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
@@ -35,7 +35,7 @@ for sudoku in sudokus:
     # print(lit2truth)
     # truth2vis(lit2truth)
     # print("solution check successful: ", check_sudoku(lit2truth))
-    wait = input("PRESS ENTER TO CONTINUE.")
+    # wait = input("PRESS ENTER TO CONTINUE.")
 
 nice_show = pd.DataFrame(node_metrics)
 print(nice_show)
