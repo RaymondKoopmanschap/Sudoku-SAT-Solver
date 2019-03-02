@@ -1,6 +1,7 @@
 from collections import Counter
 import copy
 
+
 def Dimacs2CNF(textfile):
     with open(textfile, "r") as f:
 
@@ -45,6 +46,11 @@ def Dimacs2CNF(textfile):
     return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices]
 
 
+###################################################################################################################
+"Satisfaction and empty checks"
+###################################################################################################################
+
+
 def clause_satisfied(clause, lit2truth):
     for atom in clause:
         lit = abs(atom)
@@ -78,7 +84,12 @@ def empty_clauses_naive(lit2truth, lit2cls, lit):
     return False
 
 
-def update_naive(lit2truth, lit, truth, choices):
+###################################################################################################################
+"Updates and choose value"
+###################################################################################################################
+
+
+def update_truth_values(lit2truth, lit, truth, choices):
     #  Unassign the last choice you made, because you are higher up in the tree
     if len(choices) == 1:
         for i in choices["begin"]:
@@ -95,29 +106,45 @@ def choose_value(lit2truth):
             return lit
 
 
-def update_node_metrics(node_metrics, truth, atom_count, lit, choices):
+def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses):
     """Track desired metrics
     Uncomment lines if you don't want to track them and speed up process"""
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
     node_metrics["CN"].append(atom_count[-lit])
     node_metrics["choice_depth"].append(len(choices) - 1)
+    node_metrics["num_sat_clauses"].append(num_sat_clauses)
 
 
 def update_sudoku_metrics_temp(sudoku_metrics):
-    sudoku_metrics["backtracks"] += 1
+    sudoku_metrics["num_steps"] += 1
 
 
 def update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp):
     sudoku_metrics["num_steps"].append(sudoku_metrics_temp["num_steps"])
 
 
+def update_atom_count(cl2truth, lit2truth, atom_count):
+    num_sat_clauses = len(cl2truth)
+    atom_count.clear()
+    for clause in cl2truth:
+        if not clause_satisfied(clause, lit2truth):
+            num_sat_clauses -= 1
+            for atom in clause:
+                atom_count[atom] += 1
+    return num_sat_clauses
+###################################################################################################################
+"Main algorithm"
+###################################################################################################################
+
+
 def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
 
-    update_node_metrics(node_metrics, truth, atom_count, lit, choices)
+    num_sat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses)
     update_sudoku_metrics_temp(sudoku_metrics)
-    update_naive(lit2truth, lit, truth, choices)  # Update lit2truth
+    update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
@@ -135,6 +162,11 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     return DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics)
+
+
+###################################################################################################################
+"Unit clause simplfication"
+###################################################################################################################
 
 
 def unit_clause_simplification(cl2truth, lit2truth, lit2cls):
@@ -179,7 +211,9 @@ def unit_clause(lit2truth, clause):
     return None
 
 
+###################################################################################################################
 """For later use maybe"""
+###################################################################################################################
 
 
 def check_pure_literal(atomCount, litlist):
