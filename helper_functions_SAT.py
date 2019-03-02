@@ -41,7 +41,8 @@ def Dimacs2CNF(textfile):
 
     # TODO add satCount, numClauses, lit2cls:
     satCount = 0
-    choices = []
+    choices = {}
+    choices["begin"] = copy.deepcopy(lit2truth)
     return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices]
 
 
@@ -79,17 +80,21 @@ def empty_clauses_naive(lit2truth, lit2cls, lit):
 
 
 def update_naive(lit2truth, lit, truth, choices):
-    lit2truth[lit] = truth  # Assign new given truth value
+     # Assign new given truth value
 
     # Unassign the last choice you made, because you are higher up in the tree
-    if len(choices) == 0:
-        return
-    last_choice = choices[-1]
-    while lit != last_choice:
-        lit2truth[last_choice] = 0
-        choices.remove(last_choice)
-        last_choice = choices[-1]
-
+    if len(choices) == 1:
+        for i in choices["begin"]:
+            lit2truth[i] = choices["begin"][i]
+            return
+    for i in choices[lit]:
+        lit2truth[i] = choices[lit][i]
+    lit2truth[lit] = truth
+     # last_choice = choices[-1]
+    # while lit != last_choice:
+    #     lit2truth[last_choice] = 0
+    #     choices.remove(last_choice)
+    #     last_choice = choices[-1]
 
 def choose_value(lit2truth):
     for lit in lit2truth:
@@ -101,23 +106,20 @@ def DP_algo_naive(CNF, lit, truth):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
     #print(lit2truth, lit, truth, choices)
     update_naive(lit2truth, lit, truth, choices)  # Update lit2truth
-    print(lit, truth, choices)
+    # print(lit2truth[247], lit, truth, choices)
     if satisfied_naive(cl2truth, lit2truth):
         return True
     if empty_clauses_naive(lit2truth, lit2cls, lit):
         return False
-    temp = copy.deepcopy(lit2truth)
 
-    # Comment those three lines uit if you want the version without unit clauses
     check = unit_clause_simplification(cl2truth, lit2truth, lit2cls)  # Will return true if no conflicts and false o.w.
     if check == False:  # Revert back to the original lit2truth values, because the unit_clause failed
-        lit2truth = copy.deepcopy(temp)
-
+        return False
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
     lit = choose_value(lit2truth)
-    choices.append(lit)
+    choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     return DP_algo_naive(CNF, lit, 1) or DP_algo_naive(CNF, lit, -1)
 
