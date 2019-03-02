@@ -4,30 +4,38 @@ from visualization import *
 from printSudoku import check_sudoku
 import time
 
-filepath="text-files/1000 sudokus.txt"
+filepath="text-files/2 sudokus.txt"
 
 sudokus=txt2strings(filepath)
 
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": []}
+sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
+
 for sudoku in sudokus:
     seconds = time.time()
+
+    # Converting part
     string2dimacs(sudoku,"text-files/sudoku-rules.txt","text-files/sudoku-dimacs_temp.txt")
-
     CNF = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
-
-
-    print("format preparation took: ", time.time() - seconds)
+    cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
+    # print("format preparation took: ", time.time() - seconds)
     seconds = time.time()
 
-    cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
+    # Algorithm + metrics
+    sudoku_metrics_temp = {"num_steps": 0}
+    b = DP_algo_naive(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
+    update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp)
 
-    #temp = lit2truth.copy()
+    print(node_metrics)
+    print(sudoku_metrics)
 
-    b = DP_algo_naive(CNF, litlist[0], 0)
-    print("solver took: ", time.time() - seconds)  # 0.3 seconds
-    print("solvable: ",b)
-    #print(lit2truth)
-    #truth2vis(lit2truth)
-    print("solution check successful: ", check_sudoku(lit2truth))
+    # print("solver took: ", time.time() - seconds)  # 0.3 seconds
+    # print("solvable: ",b)
+    # print(lit2truth)
+    # truth2vis(lit2truth)
+    # print("solution check successful: ", check_sudoku(lit2truth))
     wait = input("PRESS ENTER TO CONTINUE.")
 
+# maxCP = 5, always the same
+# maxCP = 32, always the same
 

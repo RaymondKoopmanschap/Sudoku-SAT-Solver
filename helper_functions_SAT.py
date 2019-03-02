@@ -64,9 +64,9 @@ def clause_is_empty(lit2truth, clause):
     for atom in clause:
         lit = abs(atom)
         if lit2truth[lit] == 0:
-            return False # If a literal is unassigned, then can never be empty
+            return False  # If a literal is unassigned, then can never be empty
         if (lit2truth[lit] * atom) > 0:
-            return False # If truth is 1 and atom is 1 then not empty, same with -1 and -1
+            return False  # If truth is 1 and atom is 1 then not empty, same with -1 and -1
 
     return True  # If no literal is true or unknown then it is false
 
@@ -79,21 +79,15 @@ def empty_clauses_naive(lit2truth, lit2cls, lit):
 
 
 def update_naive(lit2truth, lit, truth, choices):
-     # Assign new given truth value
-
-    # Unassign the last choice you made, because you are higher up in the tree
+    #  Unassign the last choice you made, because you are higher up in the tree
     if len(choices) == 1:
         for i in choices["begin"]:
             lit2truth[i] = choices["begin"][i]
             return
     for i in choices[lit]:
         lit2truth[i] = choices[lit][i]
-    lit2truth[lit] = truth
-     # last_choice = choices[-1]
-    # while lit != last_choice:
-    #     lit2truth[last_choice] = 0
-    #     choices.remove(last_choice)
-    #     last_choice = choices[-1]
+    lit2truth[lit] = truth  # Assign new given truth value
+
 
 def choose_value(lit2truth):
     for lit in lit2truth:
@@ -101,11 +95,30 @@ def choose_value(lit2truth):
             return lit
 
 
-def DP_algo_naive(CNF, lit, truth):
+def update_node_metrics(node_metrics, truth, atom_count, lit, choices):
+    """Track desired metrics
+    Uncomment lines if you don't want to track them and speed up process"""
+    node_metrics["T/F"].append(truth)
+    node_metrics["CP"].append(atom_count[lit])
+    node_metrics["CN"].append(atom_count[-lit])
+    node_metrics["choice_depth"].append(len(choices) - 1)
+
+
+def update_sudoku_metrics_temp(sudoku_metrics):
+    sudoku_metrics["backtracks"] += 1
+
+
+def update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp):
+    sudoku_metrics["num_steps"].append(sudoku_metrics_temp["num_steps"])
+
+
+def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
-    #print(lit2truth, lit, truth, choices)
+
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices)
+    update_sudoku_metrics_temp(sudoku_metrics)
     update_naive(lit2truth, lit, truth, choices)  # Update lit2truth
-    # print(lit2truth[247], lit, truth, choices)
+
     if satisfied_naive(cl2truth, lit2truth):
         return True
     if empty_clauses_naive(lit2truth, lit2cls, lit):
@@ -117,10 +130,11 @@ def DP_algo_naive(CNF, lit, truth):
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
+
     lit = choose_value(lit2truth)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
-    return DP_algo_naive(CNF, lit, 1) or DP_algo_naive(CNF, lit, -1)
+    return DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics)
 
 
 def unit_clause_simplification(cl2truth, lit2truth, lit2cls):
@@ -165,7 +179,7 @@ def unit_clause(lit2truth, clause):
     return None
 
 
-"""For later use"""
+"""For later use maybe"""
 
 
 def check_pure_literal(atomCount, litlist):
