@@ -2,8 +2,8 @@ from collections import Counter
 import copy
 
 
-def Dimacs2CNF(textfile):
-    with open(textfile, "r") as f:
+def Dimacs2CNF(text_file):
+    with open(text_file, "r") as f:
 
         # Read all the comments in the file
         line = f.readline()
@@ -114,6 +114,7 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_c
     node_metrics["CN"].append(atom_count[-lit])
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_sat_clauses"].append(num_sat_clauses)
+    node_metrics["lit"].append(lit)
 
 
 def update_sudoku_metrics_temp(sudoku_metrics):
@@ -133,6 +134,15 @@ def update_atom_count(cl2truth, lit2truth, atom_count):
             for atom in clause:
                 atom_count[atom] += 1
     return num_sat_clauses
+
+def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
+    litlist = node_metrics["lit"]
+    begin = sum(sudoku_metrics["num_steps"])
+    end = len(litlist)
+    for i in range(begin, end):
+        lit = litlist[i]
+        node_metrics["good_decision"].append(lit2truth[lit] == node_metrics["T/F"][i])
+
 ###################################################################################################################
 "Main algorithm"
 ###################################################################################################################

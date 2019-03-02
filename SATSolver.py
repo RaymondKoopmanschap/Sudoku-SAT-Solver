@@ -9,7 +9,7 @@ filepath="text-files/1000 sudokus.txt"
 
 sudokus=txt2strings(filepath)[:5]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 for sudoku in sudokus:
@@ -19,18 +19,16 @@ for sudoku in sudokus:
     string2dimacs(sudoku,"text-files/sudoku-rules.txt","text-files/sudoku-dimacs_temp.txt")
     CNF = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
     cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
-    # print("format preparation took: ", time.time() - seconds)
+    print("format preparation took: ", time.time() - seconds)
     seconds = time.time()
 
     # Algorithm + metrics
     sudoku_metrics_temp = {"num_steps": 0}
     b = DP_algo_naive(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
+    update_right_decision(lit2truth, node_metrics, sudoku_metrics)
     update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp)
 
-    print(node_metrics)
-    print(sudoku_metrics)
-
-    # print("solver took: ", time.time() - seconds)  # 0.3 seconds
+    print("solver took: ", time.time() - seconds)  # 0.3 seconds
     # print("solvable: ",b)
     # print(lit2truth)
     # truth2vis(lit2truth)
