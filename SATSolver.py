@@ -3,12 +3,13 @@ from txt2dimacs import *
 from visualization import *
 from printSudoku import check_sudoku
 import time
+import pandas as pd
 
-filepath="text-files/2 sudokus.txt"
+filepath="text-files/1000 sudokus.txt"
 
-sudokus=txt2strings(filepath)
+sudokus=txt2strings(filepath)[:5]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 for sudoku in sudokus:
@@ -36,6 +37,6 @@ for sudoku in sudokus:
     # print("solution check successful: ", check_sudoku(lit2truth))
     wait = input("PRESS ENTER TO CONTINUE.")
 
-# maxCP = 5, always the same
-# maxCP = 32, always the same
+nice_show = pd.DataFrame(node_metrics)
+print(nice_show)
 
