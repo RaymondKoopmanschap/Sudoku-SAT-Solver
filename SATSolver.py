@@ -40,12 +40,3 @@ print(nice_show)
 
 df=nice_show
 df.to_pickle("text-files/dataframe1.txt") # save file
-import pandas as pd
-df = pd.read_pickle("text-files/dataframe1.txt")
-
-from sklearn import linear_model
-print(df)
-reg = linear_model.LinearRegression()
-reg.fit(df[['CP','CN','T/F']], df['choice_depth'])
-
-print(reg.intercept_,reg.coef_)
