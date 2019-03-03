@@ -209,7 +209,7 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
-    lit = choose_value_DLCS(lit2truth, atom_count)
+    lit = choose_value_rand(lit2truth, atom_count)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     CP = atom_count[lit]

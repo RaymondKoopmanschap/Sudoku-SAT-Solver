@@ -5,7 +5,7 @@ from printSudoku import check_sudoku
 import time
 import pandas as pd
 
-filepath="text-files/1000 sudokus.txt"
+filepath="text-files/1000 sudokus.txt"[:100]
 
 sudokus=txt2strings(filepath)[:]
 
