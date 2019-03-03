@@ -101,34 +101,45 @@ def update_truth_values(lit2truth, lit, truth, choices):
     lit2truth[lit] = truth  # Assign new given truth value
 
 # %% choice heuristics
-def choose_value_rand(lit2truth, CP, CN):
+def choose_value_rand(lit2truth, atom_count):
     litlist=[]
     for lit in lit2truth:
         if lit2truth[lit] == 0:
-            litlist.append(lit2truth[lit])
-    return choice(litlist) # Random choice
+            litlist.append(lit)
+    return choice(litlist)  # Random choice
 
 
-def choose_value_own(lit2truth, CP, CN):
+def choose_value_own(lit2truth, atom_count):
+    beta_CP = -0.454
+    beta_CN = -0.244
+    f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
-        if lit2truth[lit] == 0:
-            return lit
+        f_lit = beta_CP*atom_count[lit]+beta_CN*atom_count[-lit]
+        if lit2truth[lit] == 0 and f_lit > f_max:
+            maxlit = lit
+            f_max = f_lit
+    return maxlit
 
 
-def choose_value_CLIS(lit2truth, CP, CN):
+def choose_value_CLIS(lit2truth, atom_count):
+    f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
-        if lit2truth[lit] == 0:
-            return lit
+        f_lit = max(atom_count[lit],atom_count[-lit])
+        if lit2truth[lit] == 0 and f_lit > f_max:
+            maxlit = lit
+            f_max = f_lit
+    return maxlit
 
-def choose_value_CLCS(lit2truth, CP, CN):
+def choose_value_CLCS(lit2truth, atom_count):
+    f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
-        if lit2truth[lit] == 0:
-            return lit
+        f_lit = atom_count[lit]+atom_count[-lit]
+        if lit2truth[lit] == 0 and f_lit > f_max:
+            maxlit = lit
+            f_max = f_lit
+    return maxlit
 
-def choose_value_CLIS(lit2truth, CP, CN):
-    for lit in lit2truth:
-        if lit2truth[lit] == 0:
-            return lit
+
 # %%
 
 def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses):
@@ -194,7 +205,7 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
         return True
     CP = atom_count[lit]
     CN = atom_count[-lit]
-    lit = choose_value_rand(lit2truth, CP, CN)
+    lit = choose_value_own(lit2truth, atom_count)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     if (CP<CN):
