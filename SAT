@@ -4,7 +4,8 @@
 import sys
 from helper_functions_SAT import *
 from visualization import *
-from lit2truth2DIMACS import generate_output_file
+from conversions import *
+
 
 try:
     solver = (sys.argv[1])
@@ -16,20 +17,20 @@ print(solver)
 
 node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
-
+sudoku_metrics_temp = {"num_steps": 0}
 
 CNF, num_var, num_clauses = Dimacs2CNF(inputfile)
 cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
 
-# Algorithm + metrics
+# Algorithm
 bool = False
-sudoku_metrics_temp = {"num_steps": 0}
+
 if solver == "-S1":
-    bool = DP_algo_naive(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
+    bool = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
 
 # truth2vis_sudoku(lit2truth)
 if bool:
-    generate_output_file(inputfile, lit2truth, num_clauses)
+    sudoku2dimacs_file(inputfile, lit2truth, num_clauses)
 else:
     output_file = inputfile + ".out"
     f = open(output_file, "w+")

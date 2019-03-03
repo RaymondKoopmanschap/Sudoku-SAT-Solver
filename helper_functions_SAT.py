@@ -1,50 +1,42 @@
-from collections import Counter
 from random import choice
-import copy
 
 
-def Dimacs2CNF(text_file):
-    with open(text_file, "r") as f:
+###################################################################################################################
+"Main algorithm"
+###################################################################################################################
 
-        # Read all the comments in the file
-        line = f.readline()
-        while line[0] == "c":
-            line = f.readline()
 
-        # Define number of variables and clauses
-        split1 = line.split()
-        numVar = int(split1[2])
-        numClauses = int(split1[3])
+def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics):
+    cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
 
-        cl2truth = {}  # {Clause: {1,0} } Each clause is either satisfied (1) or unknown (0)
-        lit2cls = {}  # {lit: [list of clauses, each clause is a tuple]See which literal occurs in which clause
-        lit2truth = {}  # {lit: {-1,0,1} Each literal is either false (-1), unassigned (0) or true (1).
-        atom_count = Counter()  # Keep the count of each atom, e.g. -1, 3, -124. This is for easy pure literal search
-        litlist = []  # Make a list of all the literals. Also used for pure literal search
+    # Update part
+    num_sat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses)
+    update_sudoku_metrics_temp(sudoku_metrics)
+    update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
 
-        for line in f:
-            split = line.split()
-            del split[-1]  # Remove the 0 at the end
-            clause = []
-            for atom in split:
-                atom = int(atom)
-                lit = abs(atom)
-                clause.append(atom)
-                atom_count[atom] += 1
-                lit2truth[lit] = 0
-                if lit not in litlist:
-                    lit2cls[lit] = []
-                    litlist.append(lit)
-            clause = tuple(clause)
-            for i in split:
-                lit = abs(int(i))
-                lit2cls[lit].append(clause)
-            cl2truth[clause] = 0  # Each clause is initially unknown (0)
+    if satisfied_naive(cl2truth, lit2truth):
+        return True
+    if empty_clauses_naive(lit2truth, lit2cls, lit):
+        return False
 
-    satCount = 0
-    choices = {}
-    choices["begin"] = copy.deepcopy(lit2truth)
-    return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices]
+    check = unit_clause_simplification(cl2truth, lit2truth, lit2cls)  # Will return true if no conflicts and false o.w.
+    if check == False:  # Revert back to the original lit2truth values, because the unit_clause failed
+        return False
+
+    if satisfied_naive(cl2truth, lit2truth):
+        return True
+    lit = choose_value_DLCS(lit2truth, atom_count)
+    choices[lit] = lit2truth.copy()
+
+    CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
+    CP = atom_count[lit]
+    CN = atom_count[-lit]
+
+    if CP < CN:
+        return davis_putnam(CNF, lit, -1, node_metrics, sudoku_metrics) or davis_putnam(CNF, lit, 1, node_metrics, sudoku_metrics)
+    else:
+        return davis_putnam(CNF, lit, 1, node_metrics, sudoku_metrics) or davis_putnam(CNF, lit, -1, node_metrics, sudoku_metrics)
 
 
 ###################################################################################################################
@@ -184,40 +176,6 @@ def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
     for i in range(begin, end):
         lit = litlist[i]
         node_metrics["good_decision"].append(lit2truth[lit] == node_metrics["T/F"][i])
-
-###################################################################################################################
-"Main algorithm"
-###################################################################################################################
-
-
-def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
-    cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
-
-    num_sat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
-    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses)
-    update_sudoku_metrics_temp(sudoku_metrics)
-    update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
-
-    if satisfied_naive(cl2truth, lit2truth):
-        return True
-    if empty_clauses_naive(lit2truth, lit2cls, lit):
-        return False
-
-    check = unit_clause_simplification(cl2truth, lit2truth, lit2cls)  # Will return true if no conflicts and false o.w.
-    if check == False:  # Revert back to the original lit2truth values, because the unit_clause failed
-        return False
-
-    if satisfied_naive(cl2truth, lit2truth):
-        return True
-    lit = choose_value_DLCS(lit2truth, atom_count)
-    choices[lit] = lit2truth.copy()
-    CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
-    CP = atom_count[lit]
-    CN = atom_count[-lit]
-    if (CP<CN):
-        return DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics)
-    else:
-        return DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics)
 
 
 ###################################################################################################################

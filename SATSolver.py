@@ -1,9 +1,8 @@
 from helper_functions_SAT import *
-from txt2dimacs import *
-from visualization import *
-from printSudoku import check_sudoku
+from conversions import *
 import time
 import pandas as pd
+
 
 filepath="text-files/1000 sudokus.txt"
 
@@ -19,14 +18,14 @@ for sudoku in sudokus:
 
     # Converting part
     string2dimacs(sudoku,"text-files/sudoku-rules.txt","text-files/sudoku-dimacs_temp.txt")
-    CNF = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
+    CNF, numvar, numclauses = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
     cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
     print("format preparation took: ", time.time() - seconds)
     seconds = time.time()
 
     # Algorithm + metrics
     sudoku_metrics_temp = {"num_steps": 0}
-    b = DP_algo_naive(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
+    b = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
     update_right_decision(lit2truth, node_metrics, sudoku_metrics)
     update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp)
 

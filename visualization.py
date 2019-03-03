@@ -80,13 +80,21 @@ def print_sudoku(true_vars):
     print("║ "+s[8][0]+" | "+s[8][1]+" | "+s[8][2]+" ║ "+s[8][3]+" | "+s[8][4]+" | "+s[8][5]+" ║ "+s[8][6]+" | "+s[8][7]+" | "+s[8][8]+" ║")
     print("╚═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╩═" + "═" + "═╝")
 
-def check_sudoku(true_vars):
+
+def check_sudoku(lit2truth):
+    """
+    :param lit2truth: dictionary assigning literals to truth values
+    :return:
+    the next two comments are comment+code from the old implementation
+    """
+
     """
     Check sudoku.
     :param true_vars: List of variables that your system assigned as true. Each var should be in the form of integers.
     :return:
     """
     import math as m
+    """
     s = []
     row = []
     for i in range(len(true_vars)):
@@ -94,6 +102,15 @@ def check_sudoku(true_vars):
         if (i + 1) % 9 == 0:
             s.append(row)
             row = []
+    """
+    s = np.zeros((9, 9))
+    for lit in lit2truth:
+        if lit2truth[lit] == 1:
+            lit = str(lit)
+            row = int(lit[0]) - 1
+            column = int(lit[1]) - 1
+            number = int(lit[2])
+            s[row, column] = number
 
     correct = True
     for i in range(len(s)):
