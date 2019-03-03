@@ -44,7 +44,7 @@ def Dimacs2CNF(text_file):
     satCount = 0
     choices = {}
     choices["begin"] = copy.deepcopy(lit2truth)
-    return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices]
+    return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices], numVar, numClauses
 
 
 ###################################################################################################################

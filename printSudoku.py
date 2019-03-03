@@ -1,4 +1,6 @@
+# coding: utf-8
 import numpy as np
+
 
 def print_sudoku(true_vars):
     """

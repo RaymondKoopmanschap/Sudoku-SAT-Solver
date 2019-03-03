@@ -19,7 +19,7 @@ for sudoku in sudokus:
 
     # Converting part
     string2dimacs(sudoku,"text-files/sudoku-rules.txt","text-files/sudoku-dimacs_temp.txt")
-    CNF = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
+    CNF, num_var, num_clauses = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
     cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
     print("format preparation took: ", time.time() - seconds)
     seconds = time.time()
