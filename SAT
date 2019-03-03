@@ -27,7 +27,7 @@ sudoku_metrics_temp = {"num_steps": 0}
 if solver == "-S1":
     bool = DP_algo_naive(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
 
-truth2vis(lit2truth)
+# truth2vis_sudoku(lit2truth)
 if bool:
     generate_output_file(inputfile, lit2truth, num_clauses)
 else:

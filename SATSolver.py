@@ -33,7 +33,7 @@ for sudoku in sudokus:
     print("solver took: ", time.time() - seconds)  # 0.3 seconds
     # print("solvable: ",b)
     # print(lit2truth)
-    # truth2vis(lit2truth)
+    # truth2vis_sudoku(lit2truth)
     # print("solution check successful: ", check_sudoku(lit2truth))
     # wait = input("PRESS ENTER TO CONTINUE.")
 

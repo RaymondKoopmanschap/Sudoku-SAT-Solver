@@ -24,6 +24,8 @@ def Dimacs2CNF(text_file):
 
         for line in f:
             split = line.split()
+            if len(split) <= 1:
+                continue
             del split[-1]  # Remove the 0 at the end
             clause = []
             for atom in split:
@@ -40,7 +42,6 @@ def Dimacs2CNF(text_file):
                 lit = abs(int(i))
                 lit2cls[lit].append(clause)
             cl2truth[clause] = 0  # Each clause is initially unknown (0)
-
     satCount = 0
     choices = {}
     choices["begin"] = copy.deepcopy(lit2truth)

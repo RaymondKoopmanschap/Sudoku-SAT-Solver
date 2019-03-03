@@ -5,6 +5,8 @@ def generate_output_file(inputfile, lit2truth, num_clauses):
     f.write("p cnf " + str(len(lit2truth)) + " " + str(num_clauses) + "\n")
 
     for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            lit2truth[lit] = 1
         atom = lit * lit2truth[lit]
         f.write(str(atom) + " 0\n")
 

@@ -4,7 +4,8 @@ from __future__ import print_function
 import numpy as np
 
 
-def truth2vis(lit2truth):
+def truth2vis_sudoku(lit2truth):
+    print(lit2truth)
     vis = np.zeros((9, 9))
     for lit in lit2truth:
         if lit2truth[lit] == 1:
