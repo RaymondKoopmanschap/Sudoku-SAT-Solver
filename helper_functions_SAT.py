@@ -40,59 +40,10 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics):
 
 
 ###################################################################################################################
-"Satisfaction and empty checks"
+"Choice heuristics"
 ###################################################################################################################
-
-
-def clause_satisfied(clause, lit2truth):
-    for atom in clause:
-        lit = abs(atom)
-        if atom * lit2truth[lit] > 0:  # Same sign check, if same sign then clause is satisfied
-            return True
-    return False
-
-
-def satisfied_naive(cl2truth, lit2truth):
-    for clause in cl2truth:
-        if not clause_satisfied(clause, lit2truth):
-            return False
-    return True
-
-
-def clause_is_empty(lit2truth, clause):
-    for atom in clause:
-        lit = abs(atom)
-        if lit2truth[lit] == 0:
-            return False  # If a literal is unassigned, then can never be empty
-        if (lit2truth[lit] * atom) > 0:
-            return False  # If truth is 1 and atom is 1 then not empty, same with -1 and -1
-
-    return True  # If no literal is true or unknown then it is false
-
-
-def empty_clauses_naive(lit2truth, lit2cls, lit):
-    for clause in lit2cls[lit]:
-        if clause_is_empty(lit2truth, clause):
-            return True
-    return False
-
-
-###################################################################################################################
-"Updates and choose value"
-###################################################################################################################
-
-
-def update_truth_values(lit2truth, lit, truth, choices):
-    #  Unassign the last choice you made, because you are higher up in the tree
-    if len(choices) == 1:
-        for i in choices["begin"]:
-            lit2truth[i] = choices["begin"][i]
-            return
-    for i in choices[lit]:
-        lit2truth[i] = choices[lit][i]
-    lit2truth[lit] = truth  # Assign new given truth value
-
 # %% choice heuristics
+
 def choose_value_rand(lit2truth, atom_count):
     for lit in lit2truth:
         if lit2truth[lit] == 0:
@@ -139,6 +90,21 @@ def choose_value_DLIS(lit2truth, atom_count):
 
 
 # %%
+###################################################################################################################
+"Update values + metrics"
+###################################################################################################################
+
+
+def update_truth_values(lit2truth, lit, truth, choices):
+    #  Unassign the last choice you made, because you are higher up in the tree
+    if len(choices) == 1:
+        for i in choices["begin"]:
+            lit2truth[i] = choices["begin"][i]
+            return
+    for i in choices[lit]:
+        lit2truth[i] = choices[lit][i]
+    lit2truth[lit] = truth  # Assign new given truth value
+
 
 def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses):
     """Track desired metrics
@@ -169,6 +135,7 @@ def update_atom_count(cl2truth, lit2truth, atom_count):
                 atom_count[atom] += 1
     return num_sat_clauses
 
+
 def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
     litlist = node_metrics["lit"]
     begin = sum(sudoku_metrics["num_steps"])
@@ -176,6 +143,44 @@ def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
     for i in range(begin, end):
         lit = litlist[i]
         node_metrics["good_decision"].append(lit2truth[lit] == node_metrics["T/F"][i])
+
+
+###################################################################################################################
+"Satisfaction and empty checks"
+###################################################################################################################
+
+
+def clause_satisfied(clause, lit2truth):
+    for atom in clause:
+        lit = abs(atom)
+        if atom * lit2truth[lit] > 0:  # Same sign check, if same sign then clause is satisfied
+            return True
+    return False
+
+
+def satisfied_naive(cl2truth, lit2truth):
+    for clause in cl2truth:
+        if not clause_satisfied(clause, lit2truth):
+            return False
+    return True
+
+
+def clause_is_empty(lit2truth, clause):
+    for atom in clause:
+        lit = abs(atom)
+        if lit2truth[lit] == 0:
+            return False  # If a literal is unassigned, then can never be empty
+        if (lit2truth[lit] * atom) > 0:
+            return False  # If truth is 1 and atom is 1 then not empty, same with -1 and -1
+
+    return True  # If no literal is true or unknown then it is false
+
+
+def empty_clauses_naive(lit2truth, lit2cls, lit):
+    for clause in lit2cls[lit]:
+        if clause_is_empty(lit2truth, clause):
+            return True
+    return False
 
 
 ###################################################################################################################
