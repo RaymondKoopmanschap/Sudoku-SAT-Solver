@@ -171,7 +171,10 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
     lit = choose_value(lit2truth)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
-    return DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics)
+    if (CP<CN):
+        return DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics)
+    else:
+        return DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics)
 
 
 ###################################################################################################################
