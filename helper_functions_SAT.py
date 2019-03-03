@@ -37,7 +37,10 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "sta
         lit = choose_lit_DLCS(lit2truth, atom_count)
     elif heuristic == "DLIS":
         lit = choose_lit_DLIS(lit2truth, atom_count)
-
+    elif heuristic == "JWOS":
+        lit = choose_lit_JWOS(lit2truth, lit2cls)
+    elif heuristic == "MOM":
+        lit = choose_lit_MOM(cl2truth, lit2truth, lit2cls)
 
     choices[lit] = lit2truth.copy()
 
@@ -56,6 +59,7 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "sta
 "Choice heuristics"
 ###################################################################################################################
 # %% choice heuristics
+
 
 def choose_lit_standard(lit2truth):
     for lit in lit2truth:
@@ -92,18 +96,56 @@ def choose_lit_DLCS(lit2truth, atom_count):
             f_max = f_lit
     return maxlit
 
+
 def choose_lit_DLIS(lit2truth, atom_count):
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = atom_count[lit]+atom_count[-lit]
         if lit2truth[lit] == 0 and f_lit > f_max:
-            maxlit = lit
+            max_lit = lit
             f_max = f_lit
-    return maxlit
+    return max_lit
 
 
-def choose_lit_JWOS(lit2truth, cl2truth):
-    return
+def choose_lit_JWOS(lit2truth, lit2cls):
+    max = 0
+    max_lit = 0
+    j = 0
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            for clause in lit2cls[lit]:
+                j += 2**-len(clause)
+                if j > max:
+                    max = j
+                    max_lit = lit
+    return max_lit
+
+
+def choose_lit_MOM(cl2truth, lit2truth, lit2cls):
+    k = 1
+    min_clause_len = 100000000000000
+    max_lit = 0
+    f_max = 0
+    max_lit = 0
+    for clause in cl2truth:
+        if not clause_satisfied(clause, lit2truth):
+            if len(clause) < min_clause_len:
+                min_clause_len = len(clause)
+    for lit in lit2truth:
+        f_pos = 0
+        f_neg = 0
+        for clause in lit2cls[lit]:
+            for atom in clause:
+                if lit == atom:
+                    f_pos += 1
+                if -lit == atom:
+                    f_neg += 1
+        f = (f_pos + f_neg)*2**k + f_pos * f_neg
+        if f > f_max:
+            f_max = f
+            max_lit = lit
+    return max_lit
+
 
 # %%
 ###################################################################################################################
@@ -200,7 +242,7 @@ def empty_clauses_naive(lit2truth, lit2cls, lit):
 
 
 ###################################################################################################################
-"Unit clause simplfication"
+"Unit clause simplification"
 ###################################################################################################################
 
 

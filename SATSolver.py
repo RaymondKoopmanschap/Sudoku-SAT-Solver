@@ -25,8 +25,8 @@ for sudoku in sudokus:
     seconds = time.time()
 
     # Algorithm
-    # Heuristics: "standard", "random", "own", "DLCS", "DLIS"
-    b = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp, heuristic="random")
+    # Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
+    b = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp, heuristic="MOM")
 
     # Update metrics
     update_right_decision(lit2truth, node_metrics, sudoku_metrics)
