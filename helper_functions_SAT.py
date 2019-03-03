@@ -102,6 +102,12 @@ def update_truth_values(lit2truth, lit, truth, choices):
 
 # %% choice heuristics
 def choose_value_rand(lit2truth, atom_count):
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            return lit
+
+
+def choose_value_rand(lit2truth, atom_count):
     litlist=[]
     for lit in lit2truth:
         if lit2truth[lit] == 0:
@@ -111,7 +117,7 @@ def choose_value_rand(lit2truth, atom_count):
 
 def choose_value_own(lit2truth, atom_count):
     beta_CP = -0.454
-    beta_CN = -0.244
+    beta_CN = 0.244
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = beta_CP*atom_count[lit]+beta_CN*atom_count[-lit]
@@ -121,7 +127,7 @@ def choose_value_own(lit2truth, atom_count):
     return maxlit
 
 
-def choose_value_CLIS(lit2truth, atom_count):
+def choose_value_DCLS(lit2truth, atom_count):
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = max(atom_count[lit],atom_count[-lit])
@@ -130,7 +136,7 @@ def choose_value_CLIS(lit2truth, atom_count):
             f_max = f_lit
     return maxlit
 
-def choose_value_CLCS(lit2truth, atom_count):
+def choose_value_DILS(lit2truth, atom_count):
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = atom_count[lit]+atom_count[-lit]
@@ -203,11 +209,11 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
-    CP = atom_count[lit]
-    CN = atom_count[-lit]
-    lit = choose_value_own(lit2truth, atom_count)
+    lit = choose_value_CLCS(lit2truth, atom_count)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
+    CP = atom_count[lit]
+    CN = atom_count[-lit]
     if (CP<CN):
         return DP_algo_naive(CNF, lit, -1, node_metrics, sudoku_metrics) or DP_algo_naive(CNF, lit, 1, node_metrics, sudoku_metrics)
     else:

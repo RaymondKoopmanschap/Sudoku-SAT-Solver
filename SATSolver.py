@@ -39,7 +39,7 @@ for sudoku in sudokus:
 
 df = pd.DataFrame(node_metrics)
 print(df)
+print("Algorithm took", sum(sudoku_metrics['num_steps']), "steps for all sudokus.")
+print("Algorithm took", time.time()-starttime, "seconds for all sudokus.")
 
-print("Algorithm took ",time.time()-starttime," seconds.")
-
-df.to_pickle("text-files/dataframe_rand.txt") # save file
+df.to_pickle("text-files/dataframe_rand.txt")  # save file
