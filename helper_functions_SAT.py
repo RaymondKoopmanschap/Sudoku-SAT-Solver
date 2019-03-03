@@ -99,12 +99,34 @@ def update_truth_values(lit2truth, lit, truth, choices):
         lit2truth[i] = choices[lit][i]
     lit2truth[lit] = truth  # Assign new given truth value
 
-
-def choose_value(lit2truth):
+# %% choice heuristic
+def choose_value_rand(lit2truth, CP, CN):
     for lit in lit2truth:
         if lit2truth[lit] == 0:
             return lit
 
+
+def choose_value_own(lit2truth, CP, CN):
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            return lit
+
+
+def choose_value_CLIS(lit2truth, CP, CN):
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            return lit
+
+def choose_value_CLCS(lit2truth, CP, CN):
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            return lit
+
+def choose_value_CLIS(lit2truth, CP, CN):
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            return lit
+# %%
 
 def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses):
     """Track desired metrics
