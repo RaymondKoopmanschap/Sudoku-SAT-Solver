@@ -29,7 +29,7 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "sta
     # Choosing literal
     if heuristic == "standard":
         lit = choose_lit_standard(lit2truth)
-    elif heuristic == "rand":
+    elif heuristic == "random":
         lit = choose_lit_rand(lit2truth)
     elif heuristic == "own":
         lit = choose_lit_own(lit2truth, atom_count)

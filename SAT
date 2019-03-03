@@ -23,6 +23,7 @@ CNF, num_var, num_clauses = Dimacs2CNF(inputfile)
 cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
 
 # Algorithm
+# Heuristics: "standard", "random", "own", "DLCS", "DLIS"
 bool = False
 
 if solver == "-S1":
