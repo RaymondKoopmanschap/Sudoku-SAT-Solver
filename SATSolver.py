@@ -6,9 +6,9 @@ import pandas as pd
 
 filepath="text-files/1000 sudokus.txt"
 
-sudokus=txt2strings(filepath)[:]
+sudokus=txt2strings(filepath)[:10]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 starttime=time.time()
@@ -25,7 +25,7 @@ for sudoku in sudokus:
 
     # Algorithm + metrics
     sudoku_metrics_temp = {"num_steps": 0}
-    b = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp)
+    b = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp, heuristic="standard")
     update_right_decision(lit2truth, node_metrics, sudoku_metrics)
     update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp)
 

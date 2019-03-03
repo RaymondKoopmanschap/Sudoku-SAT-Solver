@@ -6,33 +6,46 @@ from random import choice
 ###################################################################################################################
 
 
-def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics):
+def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "standard"):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
 
-    # Update part
-    num_sat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
-    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses)
+    # Updates
+    num_unsat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses)
     update_sudoku_metrics_temp(sudoku_metrics)
     update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
 
+    # Checks
     if satisfied_naive(cl2truth, lit2truth):
         return True
     if empty_clauses_naive(lit2truth, lit2cls, lit):
         return False
-
     check = unit_clause_simplification(cl2truth, lit2truth, lit2cls)  # Will return true if no conflicts and false o.w.
     if check == False:  # Revert back to the original lit2truth values, because the unit_clause failed
         return False
-
     if satisfied_naive(cl2truth, lit2truth):
         return True
-    lit = choose_value_DLCS(lit2truth, atom_count)
+
+    # Choosing literal
+    if heuristic == "standard":
+        lit = choose_lit_standard(lit2truth)
+    elif heuristic == "rand":
+        lit = choose_lit_rand(lit2truth)
+    elif heuristic == "own":
+        lit = choose_lit_own(lit2truth, atom_count)
+    elif heuristic == "DLCS":
+        lit = choose_lit_DLCS(lit2truth, atom_count)
+    elif heuristic == "DLIS":
+        lit = choose_lit_DLIS(lit2truth, atom_count)
+
+
     choices[lit] = lit2truth.copy()
 
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     CP = atom_count[lit]
     CN = atom_count[-lit]
 
+    # Choosing truth value
     if CP < CN:
         return davis_putnam(CNF, lit, -1, node_metrics, sudoku_metrics) or davis_putnam(CNF, lit, 1, node_metrics, sudoku_metrics)
     else:
@@ -44,13 +57,13 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics):
 ###################################################################################################################
 # %% choice heuristics
 
-def choose_value_rand(lit2truth, atom_count):
+def choose_lit_standard(lit2truth):
     for lit in lit2truth:
         if lit2truth[lit] == 0:
             return lit
 
 
-def choose_value_rand(lit2truth, atom_count):
+def choose_lit_rand(lit2truth):
     litlist=[]
     for lit in lit2truth:
         if lit2truth[lit] == 0:
@@ -58,7 +71,7 @@ def choose_value_rand(lit2truth, atom_count):
     return choice(litlist)  # Random choice
 
 
-def choose_value_own(lit2truth, atom_count):
+def choose_lit_own(lit2truth, atom_count):
     beta_CP = -0.454
     beta_CN = 0.244
     f_max=-1000 # value should be lower than any other value we might encounter
@@ -70,7 +83,7 @@ def choose_value_own(lit2truth, atom_count):
     return maxlit
 
 
-def choose_value_DLCS(lit2truth, atom_count):
+def choose_lit_DLCS(lit2truth, atom_count):
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = max(atom_count[lit],atom_count[-lit])
@@ -79,7 +92,7 @@ def choose_value_DLCS(lit2truth, atom_count):
             f_max = f_lit
     return maxlit
 
-def choose_value_DLIS(lit2truth, atom_count):
+def choose_lit_DLIS(lit2truth, atom_count):
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = atom_count[lit]+atom_count[-lit]
@@ -88,6 +101,9 @@ def choose_value_DLIS(lit2truth, atom_count):
             f_max = f_lit
     return maxlit
 
+
+def choose_lit_JWOS(lit2truth, cl2truth):
+    return
 
 # %%
 ###################################################################################################################
@@ -106,14 +122,14 @@ def update_truth_values(lit2truth, lit, truth, choices):
     lit2truth[lit] = truth  # Assign new given truth value
 
 
-def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_sat_clauses):
+def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses):
     """Track desired metrics
     Uncomment lines if you don't want to track them and speed up process"""
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
     node_metrics["CN"].append(atom_count[-lit])
     node_metrics["choice_depth"].append(len(choices) - 1)
-    node_metrics["num_sat_clauses"].append(num_sat_clauses)
+    node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
 
 
@@ -126,14 +142,14 @@ def update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp):
 
 
 def update_atom_count(cl2truth, lit2truth, atom_count):
-    num_sat_clauses = len(cl2truth)
+    num_unsat_clauses = 0
     atom_count.clear()
     for clause in cl2truth:
         if not clause_satisfied(clause, lit2truth):
-            num_sat_clauses -= 1
+            num_unsat_clauses += 1
             for atom in clause:
                 atom_count[atom] += 1
-    return num_sat_clauses
+    return num_unsat_clauses
 
 
 def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
