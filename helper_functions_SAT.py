@@ -1,4 +1,5 @@
 from collections import Counter
+from random import choice
 import copy
 
 
@@ -99,11 +100,13 @@ def update_truth_values(lit2truth, lit, truth, choices):
         lit2truth[i] = choices[lit][i]
     lit2truth[lit] = truth  # Assign new given truth value
 
-# %% choice heuristic
+# %% choice heuristics
 def choose_value_rand(lit2truth, CP, CN):
+    litlist=[]
     for lit in lit2truth:
         if lit2truth[lit] == 0:
-            return lit
+            litlist.append(lit2truth[lit])
+    return choice(litlist) # Random choice
 
 
 def choose_value_own(lit2truth, CP, CN):
@@ -189,8 +192,9 @@ def DP_algo_naive(CNF, lit, truth, node_metrics, sudoku_metrics):
 
     if satisfied_naive(cl2truth, lit2truth):
         return True
-
-    lit = choose_value(lit2truth)
+    CP = atom_count[lit]
+    CN = atom_count[-lit]
+    lit = choose_value_rand(lit2truth, CP, CN)
     choices[lit] = lit2truth.copy()
     CNF = cl2truth, lit2truth, lit2cls, atom_count, litlist, choices
     if (CP<CN):

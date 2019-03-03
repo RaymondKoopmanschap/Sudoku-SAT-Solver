@@ -12,6 +12,8 @@ sudokus=txt2strings(filepath)[:]
 node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
 sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
+starttime=time.time()
+
 for sudoku in sudokus:
     seconds = time.time()
 
@@ -35,8 +37,9 @@ for sudoku in sudokus:
     # print("solution check successful: ", check_sudoku(lit2truth))
     # wait = input("PRESS ENTER TO CONTINUE.")
 
-nice_show = pd.DataFrame(node_metrics)
-print(nice_show)
+df = pd.DataFrame(node_metrics)
+print(df)
 
-df=nice_show
-df.to_pickle("text-files/dataframe1.txt") # save file
+print("Algorithm took ",time.time()-starttime," seconds.")
+
+df.to_pickle("text-files/dataframe_rand.txt") # save file
