@@ -8,7 +8,7 @@ filepath="text-files/1000 sudokus.txt"
 
 sudokus=txt2strings(filepath)[:10]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": [], "num_steps": [], "max_count": [], "max_Jeros": [], "max_MOM": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": [], "num_steps": [], "max_C": [], "max_J": [], "max_f": []}
 step_counter = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 starttime=time.time()

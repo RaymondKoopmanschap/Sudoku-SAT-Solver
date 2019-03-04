@@ -195,12 +195,12 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
     node_metrics["CN"].append(atom_count[-lit])
-    node_metrics["max_count"].append(max(atom_count.values()))
+    node_metrics["max_C"].append(max(atom_count.values()))
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
-    node_metrics["max_Jeros"].append(j)
-    node_metrics["max_MOM"].append(f)
+    node_metrics["max_J"].append(j)
+    node_metrics["max_f"].append(f)
 
 
 def update_step_counter_temp(step_counter):
