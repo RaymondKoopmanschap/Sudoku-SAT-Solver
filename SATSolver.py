@@ -8,7 +8,8 @@ filepath="text-files/1000 sudokus.txt"
 
 sudokus=txt2strings(filepath)[:10]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": [], "num_steps": [], "max_C": [], "max_J": [], "max_f": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "good_decision": [],
+                "max_C": [], "max_J": [], "max_f": [], "num_steps_node": [],  "lit": [], "num_steps": []}
 step_counter = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 starttime=time.time()
@@ -17,7 +18,7 @@ for sudoku in sudokus:
     seconds = time.time()
 
     # Converting part
-    string2dimacs(sudoku,"text-files/sudoku-rules.txt","text-files/sudoku-dimacs_temp.txt")
+    string2dimacs(sudoku,"text-files/sudoku-rules.txt", "text-files/sudoku-dimacs_temp.txt")
     CNF, numvar, numclauses = Dimacs2CNF("text-files/sudoku-dimacs_temp.txt")
     cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
     step_counter_temp = {"num_steps": 0}
@@ -28,11 +29,12 @@ for sudoku in sudokus:
     # Algorithm
     # Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
     b = davis_putnam(CNF, litlist[0], 0, node_metrics, step_counter_temp, step_counter_node, heuristic="MOM")
-
     # Update metrics
     update_right_decision(lit2truth, node_metrics, step_counter, step_counter_temp)
-    update_step_counter(step_counter, step_counter_temp)
+    update_step_counter(step_counter, step_counter_temp, step_counter_node, node_metrics)
     print("solver took: ", time.time() - seconds)  # 0.3 seconds
+    print(step_counter_node)
+    print(len(node_metrics["lit"]))
 
     # print("solvable: ",b)
     # print(lit2truth)

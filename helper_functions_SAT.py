@@ -13,8 +13,7 @@ def davis_putnam(CNF, lit, truth, node_metrics, step_counter, step_counter_node,
     num_unsat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
     f, j = update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls)
     update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, j)
-    update_step_counter_temp(step_counter)
-
+    update_step_counter_temp(lit2truth, step_counter, step_counter_node, choices)
     # Checks
     if satisfied_naive(cl2truth, lit2truth):
         return True
@@ -177,6 +176,8 @@ def update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls):
                 max_f = f
     return max_f, max_j
 # %%
+
+
 ###################################################################################################################
 "Update values + metrics"
 ###################################################################################################################
@@ -184,6 +185,9 @@ def update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls):
 
 def update_truth_values(lit2truth, lit, truth, choices):
     #  Unassign the last choice you made, because you are higher up in the tree
+    if len(choices) == 1:
+        lit2truth[lit] = truth
+        return
     for i in choices[lit]:
         lit2truth[i] = choices[lit][i]
     lit2truth[lit] = truth  # Assign new given truth value
@@ -203,12 +207,22 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat
     node_metrics["max_f"].append(f)
 
 
-def update_step_counter_temp(step_counter):
+def update_step_counter_temp(lit2truth, step_counter, step_counter_node, choices):
     step_counter["num_steps"] += 1
+    for lit in choices:
+        if lit == "begin":
+            continue
+        if lit2truth[lit] == 1:
+            step_counter_node[lit] += 1
+        if lit2truth[lit] == -1:
+            step_counter_node[-lit] += 1
 
 
-def update_step_counter(step_counter, step_counter_temp):
+def update_step_counter(step_counter, step_counter_temp, step_counter_node, node_metrics):
     step_counter["num_steps"].append(step_counter_temp["num_steps"])
+    node_metrics["num_steps_node"].append(0)
+    for decision in step_counter_node:
+        node_metrics["num_steps_node"].append(step_counter_node[decision])
 
 
 def update_atom_count(cl2truth, lit2truth, atom_count):
