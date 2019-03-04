@@ -1,5 +1,6 @@
 from collections import Counter
 import copy
+import numpy as np
 
 
 def Dimacs2CNF(text_file):
@@ -42,7 +43,7 @@ def Dimacs2CNF(text_file):
 
     satCount = 0
     choices = {}
-    choices["begin"] = copy.deepcopy(lit2truth)
+    choices[111] = copy.deepcopy(lit2truth)
     return [cl2truth, lit2truth, lit2cls, atom_count, litlist, choices], numVar, numClauses
 
 
@@ -84,3 +85,54 @@ def sudoku2dimacs_file(inputfile, lit2truth, num_clauses):
         atom = lit * lit2truth[lit]
         f.write(str(atom) + " 0\n")
 
+
+def check_sudoku(lit2truth):
+    """
+    :param lit2truth: dictionary assigning literals to truth values
+    :return:
+    the next two comments are comment+code from the old implementation
+    """
+
+    """
+    Check sudoku.
+    :param true_vars: List of variables that your system assigned as true. Each var should be in the form of integers.
+    :return:
+    """
+    import math as m
+    """
+    s = []
+    row = []
+    for i in range(len(true_vars)):
+        row.append(str(int(true_vars[i]) % 10))
+        if (i + 1) % 9 == 0:
+            s.append(row)
+            row = []
+    """
+    s = np.zeros((9, 9))
+    for lit in lit2truth:
+        if lit2truth[lit] == 1:
+            lit = str(lit)
+            row = int(lit[0]) - 1
+            column = int(lit[1]) - 1
+            number = int(lit[2])
+            s[row, column] = number
+
+    correct = True
+    for i in range(len(s)):
+        for j in range(len(s[0])):
+            for x in range(len(s)):
+                if i != x and s[i][j] == s[x][j]:
+                    correct = False
+                    print("Repeated value in column:", j)
+            for y in range(len(s[0])):
+                if j != y and s[i][j] == s[i][y]:
+                    correct = False
+                    print("Repeated value in row:", i)
+            top_left_x = int(i-i%m.sqrt(len(s)))
+            top_left_y = int(j-j%m.sqrt(len(s)))
+            for x in range(top_left_x, top_left_x + int(m.sqrt(len(s)))):
+                for y in range(top_left_y, top_left_y + int(m.sqrt(len(s)))):
+                    if i != x and j != y and s[i][j] == s[x][y]:
+                        correct = False
+                        print("Repeated value in cell:", (top_left_x, top_left_y))
+    return correct
