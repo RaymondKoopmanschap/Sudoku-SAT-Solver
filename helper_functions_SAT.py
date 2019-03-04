@@ -9,10 +9,12 @@ from random import choice
 def davis_putnam(CNF, lit, truth, node_metrics, step_counter, step_counter_node, heuristic ="standard"):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
     # Updates
+    update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth\
     num_unsat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
-    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses)
+    f, j = update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls)
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, j)
     update_step_counter_temp(step_counter)
-    update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
+
     # Checks
     if satisfied_naive(cl2truth, lit2truth):
         return True
@@ -123,28 +125,57 @@ def choose_lit_MOM(cl2truth, lit2truth, lit2cls):
     k = 1
     min_clause_len = 100000000000000
     max_lit = 0
-    f_max = 0
+    max_f = 0
     max_lit = 0
     for clause in cl2truth:
         if not clause_satisfied(clause, lit2truth):
             if len(clause) < min_clause_len:
                 min_clause_len = len(clause)
     for lit in lit2truth:
-        f_pos = 0
-        f_neg = 0
-        for clause in lit2cls[lit]:
-            for atom in clause:
-                if lit == atom:
-                    f_pos += 1
-                if -lit == atom:
-                    f_neg += 1
-        f = (f_pos + f_neg)*2**k + f_pos * f_neg
-        if f > f_max:
-            f_max = f
-            max_lit = lit
+        if lit2truth[lit] == 0:
+            f_pos = 0
+            f_neg = 0
+            for clause in lit2cls[lit]:
+                for atom in clause:
+                    if lit == atom:
+                        f_pos += 1
+                    if -lit == atom:
+                        f_neg += 1
+            f = (f_pos + f_neg)*2**k + f_pos * f_neg
+            if f > max_f:
+                max_f = f
+                max_lit = lit
     return max_lit
 
 
+def update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls):
+    k = 1
+    min_clause_len = 100000000000000
+    max_f = 0
+    max_j = 0
+    j = 0
+    for clause in cl2truth:
+        if not clause_satisfied(clause, lit2truth):
+            if len(clause) < min_clause_len:
+                min_clause_len = len(clause)
+
+    for lit in lit2truth:
+        if lit2truth[lit] == 0:
+            f_pos = 0
+            f_neg = 0
+            for clause in lit2cls[lit]:
+                j += 2 ** -len(clause)
+                if j > max_j:
+                    max_j = j
+                for atom in clause:
+                    if lit == atom:
+                        f_pos += 1
+                    if -lit == atom:
+                        f_neg += 1
+            f = (f_pos + f_neg) * 2 ** k + f_pos * f_neg
+            if f > max_f:
+                max_f = f
+    return max_f, max_j
 # %%
 ###################################################################################################################
 "Update values + metrics"
@@ -158,7 +189,7 @@ def update_truth_values(lit2truth, lit, truth, choices):
     lit2truth[lit] = truth  # Assign new given truth value
 
 
-def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses):
+def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, j):
     """Track desired metrics
     Uncomment lines if you don't want to track them and speed up process"""
     node_metrics["T/F"].append(truth)
@@ -168,6 +199,8 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
+    node_metrics["max_Jeros"].append(j)
+    node_metrics["max_MOM"].append(f)
 
 
 def update_step_counter_temp(step_counter):
