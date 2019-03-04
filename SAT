@@ -7,31 +7,42 @@ from visualization import *
 from conversions import *
 
 
-try:
-    solver = (sys.argv[1])
-    inputfile = (sys.argv[2])
-except:
-    print("Please specify input file")
+# try:
+#     solver = (sys.argv[1])
+#     inputfile = (sys.argv[2])
+# except:
+#     print("Please specify input file")
+#
+# print(solver)
+#
+# node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
+# sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
+# sudoku_metrics_temp = {"num_steps": 0}
+#
+# CNF, num_var, num_clauses = Dimacs2CNF(inputfile)
+# cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
+#
+# # Algorithm
+# # Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
+# bool = False
+#
+# if solver == "-S1":
+#     bool = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp, heuristic="standard")
+#
+# # truth2vis_sudoku(lit2truth)
+# if bool:
+#     sudoku2dimacs_file(inputfile, lit2truth, num_clauses)
+# else:
+#     output_file = inputfile + ".out"
+#     f = open(output_file, "w+")
 
-print(solver)
+c = Counter()
+c[0] = 2
+c[1] = 3
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_sat_clauses": [], "lit": [], "good_decision": []}
-sudoku_metrics = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
-sudoku_metrics_temp = {"num_steps": 0}
+def test():
+    c[2] += 1
 
-CNF, num_var, num_clauses = Dimacs2CNF(inputfile)
-cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
-
-# Algorithm
-# Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
-bool = False
-
-if solver == "-S1":
-    bool = davis_putnam(CNF, litlist[0], 0, node_metrics, sudoku_metrics_temp, heuristic="standard")
-
-# truth2vis_sudoku(lit2truth)
-if bool:
-    sudoku2dimacs_file(inputfile, lit2truth, num_clauses)
-else:
-    output_file = inputfile + ".out"
-    f = open(output_file, "w+")
+test()
+for i in c:
+    print(c[i])
