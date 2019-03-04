@@ -6,9 +6,9 @@ import pandas as pd
 
 filepath="text-files/1000 sudokus.txt"
 
-sudokus=txt2strings(filepath)[:10]
+sudokus=txt2strings(filepath)[:20]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "good_decision": [],
+node_metrics = {"T/F": [], "CP": [], "CN": [], "JP": [], "JN": [], "fP": [], "fN": [], "choice_depth": [], "num_unsat_clauses": [], "good_decision": [],
                 "max_C": [], "max_J": [], "max_f": [], "num_steps_node": [],  "lit": [], "num_steps": []}
 step_counter = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 

@@ -10,9 +10,11 @@ def davis_putnam(CNF, lit, truth, node_metrics, step_counter, step_counter_node,
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
     # Updates
     update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth\
-    num_unsat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
-    f, j = update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls)
-    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, j)
+    J=atom_count
+    f=atom_count
+    num_unsat_clauses = update_atom_count_J_and_f(cl2truth, lit2truth, atom_count, J, f)
+    #f, j = update_JWOS_and_MOM(cl2truth, lit2truth, lit2cls)
+    update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, J)
     update_step_counter_temp(lit2truth, step_counter, step_counter_node, choices)
     # Checks
     if satisfied_naive(cl2truth, lit2truth):
@@ -75,8 +77,8 @@ def choose_lit_rand(lit2truth):
 
 
 def choose_lit_own(lit2truth, atom_count):
-    beta_CP = -0.454
-    beta_CN = 0.244
+    beta_CP = 0.454
+    beta_CN = -0.244
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = beta_CP*atom_count[lit]+beta_CN*atom_count[-lit]
@@ -87,13 +89,13 @@ def choose_lit_own(lit2truth, atom_count):
 
 
 def choose_lit_DLCS(lit2truth, atom_count):
-    f_max=-1000 # value should be lower than any other value we might encounter
+    f_max=-1000  # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = max(atom_count[lit],atom_count[-lit])
         if lit2truth[lit] == 0 and f_lit > f_max:
-            maxlit = lit
+            max_lit = lit
             f_max = f_lit
-    return maxlit
+    return max_lit
 
 
 def choose_lit_DLIS(lit2truth, atom_count):
@@ -193,18 +195,22 @@ def update_truth_values(lit2truth, lit, truth, choices):
     lit2truth[lit] = truth  # Assign new given truth value
 
 
-def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, j):
+def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses, f, J):
     """Track desired metrics
     Uncomment lines if you don't want to track them and speed up process"""
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
     node_metrics["CN"].append(atom_count[-lit])
+    node_metrics["JP"].append(J[lit])
+    node_metrics["JN"].append(J[-lit])
+    node_metrics["JP"].append(f[lit])
+    node_metrics["JN"].append(f[-lit])
     node_metrics["max_C"].append(max(atom_count.values()))
+    node_metrics["max_J"].append(max(J.values()))
+    node_metrics["max_f"].append(max(f.values()))
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
-    node_metrics["max_J"].append(j)
-    node_metrics["max_f"].append(f)
 
 
 def update_step_counter_temp(lit2truth, step_counter, step_counter_node, choices):
@@ -225,14 +231,25 @@ def update_step_counter(step_counter, step_counter_temp, step_counter_node, node
         node_metrics["num_steps_node"].append(step_counter_node[decision])
 
 
-def update_atom_count(cl2truth, lit2truth, atom_count):
+def update_atom_count_J_and_f(cl2truth, lit2truth, atom_count,J,f):
     num_unsat_clauses = 0
     atom_count.clear()
+    J.clear()
+    f.clear()
+    min_clause_len = 100000000000000
+    for clause in cl2truth:
+        if not clause_satisfied(clause, lit2truth):
+            if len(clause) < min_clause_len:
+                min_clause_len = len(clause)
+
     for clause in cl2truth:
         if not clause_satisfied(clause, lit2truth):
             num_unsat_clauses += 1
             for atom in clause:
                 atom_count[atom] += 1
+                J[atom] += 2 ** -len(clause)
+                f[atom] += 1*(min_clause_len == len(clause))
+
     return num_unsat_clauses
 
 
