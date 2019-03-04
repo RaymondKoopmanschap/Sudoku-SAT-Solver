@@ -23,7 +23,7 @@ CNF, num_var, num_clauses = Dimacs2CNF(inputfile)
 cl2truth, lit2truth, lit2cls, atomCount, litlist, choices = CNF
 
 # Algorithm
-# Heuristics: "standard", "random", "own", "DLCS", "DLIS"
+# Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
 bool = False
 
 if solver == "-S1":
@@ -35,7 +35,6 @@ if bool:
 else:
     output_file = inputfile + ".out"
     f = open(output_file, "w+")
-
 
 
 
