@@ -164,6 +164,7 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
     node_metrics["CN"].append(atom_count[-lit])
+    node_metrics["max_count"].append(max(atom_count.values()))
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
