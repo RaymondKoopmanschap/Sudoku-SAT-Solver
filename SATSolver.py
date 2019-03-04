@@ -8,7 +8,7 @@ filepath="text-files/1000 sudokus.txt"
 
 sudokus=txt2strings(filepath)[:20]
 
-node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": [], "num_steps": []}
+node_metrics = {"T/F": [], "CP": [], "CN": [], "choice_depth": [], "num_unsat_clauses": [], "lit": [], "good_decision": [], "num_steps": [], "max_C": [], "max_J": [], "max_f": []}
 step_counter = {"num_steps": []}  # Number of steps is backtracks + 2 (or 1 if it only takes 1 step)
 
 starttime=time.time()
@@ -27,7 +27,7 @@ for sudoku in sudokus:
 
     # Algorithm
     # Heuristics: "standard", "random", "own", "DLCS", "DLIS", "JWOS", "MOM"
-    b = davis_putnam(CNF, litlist[0], 0, node_metrics, step_counter_temp, step_counter_node, heuristic="own")
+    b = davis_putnam(CNF, litlist[0], 0, node_metrics, step_counter_temp, step_counter_node, heuristic="MOM")
 
     # Update metrics
     update_right_decision(lit2truth, node_metrics, step_counter, step_counter_temp)
@@ -37,7 +37,7 @@ for sudoku in sudokus:
     # print("solvable: ",b)
     # print(lit2truth)
     # truth2vis(lit2truth)
-    print("solution check successful: ", check_sudoku(lit2truth))
+    # print("solution check successful: ", check_sudoku(lit2truth))
     # wait = input("PRESS ENTER TO CONTINUE.")
 
 df = pd.DataFrame(node_metrics)
