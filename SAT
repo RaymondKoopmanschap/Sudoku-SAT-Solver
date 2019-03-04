@@ -36,5 +36,3 @@ else:
     output_file = inputfile + ".out"
     f = open(output_file, "w+")
 
-
-

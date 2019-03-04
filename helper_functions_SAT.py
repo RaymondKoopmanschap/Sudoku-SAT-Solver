@@ -6,15 +6,13 @@ from random import choice
 ###################################################################################################################
 
 
-def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "standard"):
+def davis_putnam(CNF, lit, truth, node_metrics, step_counter, step_counter_node, heuristic ="standard"):
     cl2truth, lit2truth, lit2cls, atom_count, litlist, choices = CNF
-
     # Updates
     num_unsat_clauses = update_atom_count(cl2truth, lit2truth, atom_count)
     update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat_clauses)
-    update_sudoku_metrics_temp(sudoku_metrics)
+    update_step_counter_temp(step_counter)
     update_truth_values(lit2truth, lit, truth, choices)  # Update lit2truth
-
     # Checks
     if satisfied_naive(cl2truth, lit2truth):
         return True
@@ -50,9 +48,9 @@ def davis_putnam(CNF, lit, truth, node_metrics, sudoku_metrics, heuristic = "sta
 
     # Choosing truth value
     if CP < CN:
-        return davis_putnam(CNF, lit, -1, node_metrics, sudoku_metrics) or davis_putnam(CNF, lit, 1, node_metrics, sudoku_metrics)
+        return davis_putnam(CNF, lit, -1, node_metrics, step_counter, step_counter_node, heuristic) or davis_putnam(CNF, lit, 1, node_metrics, step_counter, step_counter_node, heuristic)
     else:
-        return davis_putnam(CNF, lit, 1, node_metrics, sudoku_metrics) or davis_putnam(CNF, lit, -1, node_metrics, sudoku_metrics)
+        return davis_putnam(CNF, lit, 1, node_metrics, step_counter, step_counter_node, heuristic) or davis_putnam(CNF, lit, -1, node_metrics, step_counter, step_counter_node, heuristic)
 
 
 ###################################################################################################################
@@ -76,8 +74,8 @@ def choose_lit_rand(lit2truth):
 
 
 def choose_lit_own(lit2truth, atom_count):
-    beta_CP = -0.454
-    beta_CN = 0.244
+    beta_CP = 0.454
+    beta_CN = -0.244
     f_max=-1000 # value should be lower than any other value we might encounter
     for lit in lit2truth:
         f_lit = beta_CP*atom_count[lit]+beta_CN*atom_count[-lit]
@@ -155,10 +153,6 @@ def choose_lit_MOM(cl2truth, lit2truth, lit2cls):
 
 def update_truth_values(lit2truth, lit, truth, choices):
     #  Unassign the last choice you made, because you are higher up in the tree
-    if len(choices) == 1:
-        for i in choices["begin"]:
-            lit2truth[i] = choices["begin"][i]
-            return
     for i in choices[lit]:
         lit2truth[i] = choices[lit][i]
     lit2truth[lit] = truth  # Assign new given truth value
@@ -169,19 +163,19 @@ def update_node_metrics(node_metrics, truth, atom_count, lit, choices, num_unsat
     Uncomment lines if you don't want to track them and speed up process"""
     node_metrics["T/F"].append(truth)
     node_metrics["CP"].append(atom_count[lit])
-    node_metrics["max_Count"].append(max(atom_count))
+    #node_metrics["max_Count"].append(atom_count)
     node_metrics["CN"].append(atom_count[-lit])
     node_metrics["choice_depth"].append(len(choices) - 1)
     node_metrics["num_unsat_clauses"].append(num_unsat_clauses)
     node_metrics["lit"].append(lit)
 
 
-def update_sudoku_metrics_temp(sudoku_metrics):
-    sudoku_metrics["num_steps"] += 1
+def update_step_counter_temp(step_counter):
+    step_counter["num_steps"] += 1
 
 
-def update_sudoku_metrics(sudoku_metrics, sudoku_metrics_temp):
-    sudoku_metrics["num_steps"].append(sudoku_metrics_temp["num_steps"])
+def update_step_counter(step_counter, step_counter_temp):
+    step_counter["num_steps"].append(step_counter_temp["num_steps"])
 
 
 def update_atom_count(cl2truth, lit2truth, atom_count):
@@ -195,13 +189,14 @@ def update_atom_count(cl2truth, lit2truth, atom_count):
     return num_unsat_clauses
 
 
-def update_right_decision(lit2truth, node_metrics, sudoku_metrics):
+def update_right_decision(lit2truth, node_metrics, step_counter, step_counter_temp):
     litlist = node_metrics["lit"]
-    begin = sum(sudoku_metrics["num_steps"])
-    end = len(litlist)
+    begin = sum(step_counter["num_steps"])  # Do this before updating this num_steps dictionary
+    end = len(litlist)  # Total number of lit now in the dictionary
     for i in range(begin, end):
         lit = litlist[i]
         node_metrics["good_decision"].append(lit2truth[lit] == node_metrics["T/F"][i])
+        node_metrics["num_steps"].append(step_counter_temp["num_steps"])
 
 
 ###################################################################################################################
